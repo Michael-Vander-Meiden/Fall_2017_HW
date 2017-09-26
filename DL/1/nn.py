@@ -62,9 +62,9 @@ class FCN(object):
 
 
                 #calculate new weights based on old weights, learn rate, and nablas
-                self.weights = [w - (self.eta / self.mini_batch_size) * dw for w, dw in zip(self.weights, nabla_w)]
+                self.weights = [w - (self.eta / self.batch_size) * dw for w, dw in zip(self.weights, nabla_w)]
                 #calculate biases
-                self.biases = [b - (self.eta / self.mini_batch_size) * db for b, db in zip(self.biases, nabla_b)]
+                self.biases = [b - (self.eta / self.batch_size) * db for b, db in zip(self.biases, nabla_b)]
 
             #print status messages and get validation data
             if validation_data:
@@ -90,7 +90,7 @@ class FCN(object):
             #calculate each neuron's pre-activation values
             self._inps[i] = (self.weights[i].dot(self._outs[i - 1]) + self.biases[i])
             #activate these values to get that layers outputs
-            self._outs[i] = sigmoid(self._inps[i])
+            self._outs[i] = helper.sigmoid(self._inps[i])
 
 
 #TODO look up cross-entropy and impliment backprop for it
@@ -100,15 +100,12 @@ class FCN(object):
         delt_nabla_w = [np.zeros(weight.shape) for weight in self.weights]
 
         #TODO change this to softmax
-        error = (self._outs[-1] - y) * sigmoid_prime(self._inps[-1])
+        error = (self._outs[-1] - y) * helper.dSigmoid(self._inps[-1])
         delt_nabla_b[-1] = error
         delt_nabla_w[-1] = error.dot(self._outs[-2].transpose())
 
         for l in range(self.num_layers - 2, 0, -1):
-            error = np.multiply(
-                self.weights[l + 1].transpose().dot(error),
-                sigmoid_prime(self._inps[l])
-            )
+            error = np.multiply(self.weights[l + 1].transpose().dot(error),helper.dSigmoid(self._inps[l]))
             delt_nabla_b[l] = error
             delt_nabla_w[l] = error.dot(self._outs[l - 1].transpose())
 
@@ -141,7 +138,7 @@ class FCN(object):
 
         # Other hyperparameters are set as specified in model. These were cast
         # to numpy arrays for saving in the compressed binary.
-        self.mini_batch_size = int(npz_members['mini_batch_size'])
+        self.batch_size = int(npz_members['batch_size'])
         self.n_epochs = int(npz_members['n_epochs'])
         self.eta = float(npz_members['eta'])
 
@@ -157,7 +154,7 @@ class FCN(object):
             file=os.path.join(os.curdir, 'models', filename),
             weights=self.weights,
             biases=self.biases,
-            mini_batch_size=self.mini_batch_size,
+            batch_size=self.batch_size,
             n_epochs=self.n_epochs,
             eta=self.eta
 )
