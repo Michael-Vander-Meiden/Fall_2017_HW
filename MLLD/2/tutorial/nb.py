@@ -17,7 +17,7 @@ def split_line(line):
 def split_test(line):
     splits = re.split(r'\t+', line)
     ids = splits[0]
-    words = tokenizeDoc(splits[1])
+    words = tokenizeDoc(splits[2])
     return ids, words
 
 def get_lw_pairs(line):
