@@ -1,6 +1,6 @@
 import numpy as np
-
-
+import pdb
+import matplotlib.pyplot as plt
 #Below are activation functions and their derivatives
 
 def sigmoid(inp):
@@ -12,14 +12,12 @@ def dSigmoid(inp):
 	return outp
 
 def relu(inp):
-	outp = np.maximum(z, 0)
+	outp = np.maximum(inp, 0)
 	return outp
 
 def dRelu(inp):
-	outp = float(z>0)
+	outp = float(inp>0)
 	return outp
-
-#softmax function for final layer
 
 def softmax(inp):
 	outp = (np.exp(inp) / np.sum(np.exp(inp)))
@@ -27,3 +25,20 @@ def softmax(inp):
 
 def dSoftmax(inp):
 	outp = softmax(inp)*(1-softmax(inp))
+
+#Testing helper functions
+def ce(x,y,mytype):
+	if mytype == 'train':
+		pdb.set_trace()
+
+def plot_ce(filename, net):
+	plt.clf()
+	plt.plot(net.epoch_nums,net.v_ce_array, 'r--',net.t_ce_array, 'b--')
+	plt.savefig(filename)
+
+def plot_ac(filename, net):
+	plt.clf()
+	plt.plot(net.epoch_nums,net.v_ac_array, 'r--',net.t_ac_array, 'b--')
+	plt.savefig(filename)	
+
+

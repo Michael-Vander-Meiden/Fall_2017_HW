@@ -1,0 +1,6 @@
+1a. No
+1b. No
+
+2. No, the wall clock time is not linear with respect to reducers. The more reducers that are used, the less marginal gain in effeciency per reducer.
+
+3. Out of time.

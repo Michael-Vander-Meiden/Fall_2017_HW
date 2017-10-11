@@ -8,7 +8,7 @@ import copy
 #Our useful format will be tuples (X,Y) where X is the data and Y is the list
 
 
-def data_from_doc(docname = 'digitstrain.txt'):
+def training_from_doc(docname = 'digitstrain.txt'):
 	
 
 	lines = open(docname).readlines()
@@ -17,6 +17,27 @@ def data_from_doc(docname = 'digitstrain.txt'):
 
 	for i,item in enumerate(holder):
 		data[i] = (np.expand_dims(item[0], axis=1),onehot(item[1]))
+
+	return data
+
+def validation_from_doc(docname = 'digitsvalid.txt'):
+
+	lines = open(docname).readlines()
+	holder = [(np.fromstring(line.rstrip()[:-2],dtype = float,sep=','),int(line.rstrip()[-1:]))for line in lines]
+	data = copy.deepcopy(holder)
+
+	for i,item in enumerate(holder):
+		data[i] = (np.expand_dims(item[0], axis=1),item[1])
+
+	return data
+
+def test_from_doc(docname = 'digitstest.txt'):
+	lines = open(docname).readlines()
+	holder = [(np.fromstring(line.rstrip()[:-2],dtype = float,sep=','),int(line.rstrip()[-1:]))for line in lines]
+	data = copy.deepcopy(holder)
+
+	for i,item in enumerate(holder):
+		data[i] = (np.expand_dims(item[0], axis=1),item[1])
 
 	return data
 

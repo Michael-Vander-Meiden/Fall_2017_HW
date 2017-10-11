@@ -21,6 +21,9 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{amsmath}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
 
 \title{10707 Homework 1}
 
@@ -104,6 +107,30 @@ upwards and increasing training set size rightwards. \\
 
 \subsection*{Your answer here}
 
+1. Graph shown in Figure ~\ref{fig:1a}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.3\linewidth]{1a.jpg}
+\caption{error rate vs complexity}
+\label{fig:1a}
+\end{figure}
+
+
+
+2. Graph shown in Figure ~\ref{fig:1b}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.3\linewidth]{1b.jpg}
+\caption{error rate vs dataset size}
+\label{fig:1b}
+\end{figure}
+
+3. Yes, it is a reasonable regularization metric. As a network trains more and more, the weights tune directly to the data in the training set. The problem with this is that the network may begin to start looking at specific noise in the training set that may not be represented in the test set. The more the network trains, the more the weights are specifically tuned to the training set, and at some point it will likely be tuned to where it is overfit. Stopping early prevents the network from training to the point where it knows every detail of the test set, which can improve generalization. T
+
+
+
 testingtesting
 %\section*{Problem 2 (12 pts)}
 %In this question we will study the expected loss for regression problems.
@@ -170,6 +197,14 @@ its mean, variance, and entropy.
 
 \subsection*{Your answer here}
 
+Entropy is shown in figure below.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.3\linewidth]{bern1.png}
+\caption{entropy of given distribution}
+\label{fig:llfunc}
+\end{figure}
 
 \section*{Problem 4 (12 pts)}
 Consider a binary classification problem in which the target 
@@ -182,6 +217,13 @@ Note that this error function makes the model robust to incorrectly labelled dat
 
 \subsection*{Your answer here}
 
+The error function can be seen in the figure below with the function when eta=0 below it.
+\begin{figure}[h]
+\centering
+\includegraphics[width=.5\linewidth]{4.jpg}
+\caption{negative log likelyhood with uncertainty}
+\label{fig:llfunc}
+\end{figure}
 %Consider the following distribution
 %\beqa
 %p(x|\sigma,q) = \frac{q}{2(2\sigma^2)^{1/q}\Gamma(1/q)}
@@ -215,6 +257,16 @@ given by $\tanh(a)$ where the tanh function is defined by:
 \end{equation}
 
 \subsection*{Your answer here}
+
+The derivation is shown below in the figure below.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.5\linewidth]{5.jpg}
+\caption{derivation of sigmoid into tanh}
+\label{fig:sigtan}
+\end{figure}
+
 
 \section*{Problem 6 (60 pts)}
 
@@ -287,7 +339,37 @@ How does the network's performance differ on the training set versus the validat
 during learning? Use the plot of error curves (training and validation) to support your argument.
 
 
+
 \subsection*{Your answer here}
+
+As you can see in Figure ~\ref{fig:6a},the performance of both the test set and the validation set start out fairly equal. This is the case with both measures of performance, cross-entropy loss and prediction accuracy. 
+
+Soon, however, the model begins to fit better to the training set than the validation set. While the validation set performance still improves, the improvement of train set data is faster.
+
+Eventually, convergence is reached and performance of the validation set stays the same while the performance of the train set marginally increases over time.
+
+When comparing cross entropy error with classification error, the charts seem very similar. The only observable difference is that the cross entropy loss seems to be more similar than the prediction accuracy. This could be because similar numerals were almost predicted correctly in validation set, but lost out to different class.
+
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{q6a.png}
+  \caption{Cross Entropy Error}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{q6b.png}
+  \caption{Prediction Accuracy}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{A comparison of two error measures on validation and train data}
+\label{fig:6a}
+\end{figure}
+
+
 
 \subsubsection*{b) Classification error [5 points]}
 
@@ -304,6 +386,7 @@ Do you observe a different behavior compared to the behavior of the cross-entrop
 error function? 
 
 \subsection*{Your answer here}
+Question answered in section A.
 
 \subsubsection*{c) Visualizing Parameters [5 points]}
 Visualize your best results of the learned W as 100 28x28 images 
@@ -311,6 +394,16 @@ Visualize your best results of the learned W as 100 28x28 images
 Do the learned features exhibit any structure?
 
 \subsection*{Your answer here}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.7\linewidth]{q6c.png}
+\caption{sample of hidden layer weights}
+\label{fig:weights}
+\end{figure}
+
+While at first glance, the weights in Figure ~\ref{fig:weights} may appear to be noisy, one can see structure taking the shape of streaks at different angles and intercepts. 
+While we were told to use at least 200 epochs, my network seems to have completely fit in 75. For this reason, I believe that the weights would appear more structured if they were taken from this moment. As epochs went on, overfitting may have caused weights to pick up on less general details about the training set.
 
 \subsubsection*{d) Learning rate [5 points]}
 Try different values of the learning rate $\epsilon$. 
@@ -323,6 +416,45 @@ parameters?
 
 \subsection*{Your answer here}
 
+As you can see in Figure ~\ref{fig:eta}, the learning rate had an extremely large effect on convergence. Namely, the higher the learning rate, the faster the network converged.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{eta01ac.png}
+  \caption{eta = 0.1}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{eta001ac.png}
+  \caption{eta = 0.01}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{a comparison of the conversion of different learning rates}
+\label{fig:eta}
+\end{figure}
+ When factoring in momentum, the effects were less clear. However momentum did seem to improve the convergence rate overall. Show in Figure \ref{fig:momentum}, are some interesting effects caused when the momentum rate was 0.5. The network's accuracy seemed to plateau and then jump up multiple times.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{m5ac.png}
+  \caption{momentum = 0.5}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{m9ac.png}
+  \caption{momentum = 0.9}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{a comparison of the conversion of different momentum rates}
+\label{fig:momentum}
+\end{figure}
+
 \subsubsection*{e) Number of hidden units [5 points]}
 Set the learning rate $\epsilon$ to $.01$, momentum to $0.5$ and try different numbers of
 hidden units on this problem.
@@ -330,7 +462,28 @@ You should try training a network with 20, 100, 200, and 500  hidden units.
 Describe the effect of this modification on the convergence properties, and the
 generalization of the network.
 
+To find the best parameters, I would use choose a range of each one which I thought was reasonable and perform either a random search or a grid search on these parameters.
+
 \subsection*{Your answer here}
+As the number of units increased, performance actually seemed to decrease in the network. That said, even though convergence was slowed, the actual generalization of the network seemed to be improved. Figure \ref{fig:hu} shows these effects.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{20huac.png}
+  \caption{20 hidden units}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{500huac.png}
+  \caption{500 hidden units}
+  \label{fig:sub2}
+\end{subfigure}
+\caption{a comparison of the accuracy of numbers of hidden units}
+\label{fig:hu}
+\end{figure}
 
 \subsubsection*{f) Best performing single-layer network [10 points]}
 Cross-validation: 
@@ -355,6 +508,25 @@ Visualize your best results of the learned W as 28x28 images
 (plot all filters as one image, as we have seen in class).
 
 \subsection*{Your answer here}
+I found that the best learning rates tended to be higher, my best one was eta=0.5. Because I was using a high learning rate, I also employed early stopping and only ran for 18 epochs. I did not use momentum as it caused worse performance. I ended up sticking with 100 hidden units, as this had the best performance once the other hyperparameters were set. L2 regularization did help and was used.
+Statistics for each set of data:
+Train:
+Accuracy = 97.1
+Cross Entropy = 0.28
+Validation:
+Accuracy = 88.9
+Cross Entropy = 0.60
+Test:
+Accuracy = 87.46
+Cross Entropy = 0.71
+Figure ~\ref{fig:weights2} shows the vizualization of the weights for this network.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=.7\linewidth]{q6f_weights.png}
+\caption{sample of hidden layer weights}
+\label{fig:weights2}
+\end{figure}
 
 \subsubsection*{g) Extension to multiple layers [10 points]}
 Implement a 2-layer neural network, starting with a simple architecture 
@@ -380,12 +552,42 @@ Does 1-layer network outperform a 2-layer model in term of generalization capabi
 
 \subsection*{Your answer here}
 
+While I believe that a 2-layer model should be able to outperform, I could not find hyperparameters that recieved better performance.
+
+I found that I was able to train for many more epochs before plateauing of the validation accuracy, however I also found that it was much easier to overfit on the training data.
+Learning rate = .03
+Epochs = 500
+Momentum = 0.9
+Layers = [10,20]
+
+
+Statistics for each set of data:
+Train:
+Accuracy = 90.5
+Cross Entropy = 0.46
+Validation:
+Accuracy = 82.2
+Cross Entropy = 0.67
+Test:
+Accuracy = 78.9
+Cross Entropy = 0.75
+
+Figure ~\ref{fig:weights3} shows the weights of my first layer. The structure in these weights appears to be more complicated than the previous ones. Rather than simple lines at different angles, the weights show structures such as loops and curves. This may be because there were much fewer weights in my first layer.
+
+\begin{figure}
+\centering
+\includegraphics[width=.7\linewidth]{gweights.png}
+\caption{sample of hidden layer weights}
+\label{fig:weights3}
+\end{figure}
+
 \subsubsection*{h) Batch Normalization [10 points]}
 
 For your two-layer network, implement batch normalization for a batch size of 32. Describe how batch norm helps (or doesn't help) in terms of speed and accuracy (train and validation). 
 
 
 \subsection*{Your answer here}
+Batch normalization did not necessarily help with speed to convergence, however I did find that it helped the network with accuracy. The generalization of the network was also improved, as the loss difference between the train and validation sets were smaller.
 
 \subsubsection*{i) Different Activation Functions [5 points]}
 
@@ -393,7 +595,9 @@ Now, change the activation functions to ReLU and tanh instead of the original si
 
 \subsection*{Your answer here}
 
+ReLU seemed to perform marginally better in all aspects, however there were different optimal hyperparameters.
 
+TanH performed horribly, and I could not find a set of hyperparameters that worked.
 
 
 

@@ -4,19 +4,22 @@ import helper
 import copy
 import random
 import pdb
+import math
 
 #using a similar architecture to SKLearn's models
 
 class FCN(object):
-    def __init__(self, architecture=[784,100,10], eta = 0.1, batch_size = 1, dropout = 0, n_epochs=200, rand_seed = 1):
+    def __init__(self, architecture=[784,100,10], eta = 0.1, batch_size = 1, dropout = 0, n_epochs=130, rand_seed = 45, momentum = .9):
         
 
         self.batch_size = batch_size
         self.n_epochs = n_epochs
         self.eta = eta
-
+        self.momentum = momentum
         self.architecture = architecture
         self.num_layers = len(architecture)
+        np.random.seed(rand_seed)
+        random.seed(rand_seed)
 
         #initialize weights and biases from normal distribution
 
@@ -27,7 +30,8 @@ class FCN(object):
 
         #this is a list of arrays of all the weights in an y by x shape for each layer
         self.weights = [np.array([0])] + [np.random.randn(y,x) for y,x in zip(architecture[1:], architecture[:-1])]
-
+        #this is a set of previous gradients we will use in momentum calculation
+        self.prev_grads = [np.zeros(weight.shape) for weight in self.weights]
         #this is a list of 1d arrays, which have one bias per neuron
         self.biases = [np.random.randn(y,1) for y in architecture]
 
@@ -36,6 +40,13 @@ class FCN(object):
 
         #this creates a list of arrays of 0, for the activations of each neuron. Same shape as inps.
         self._outs = copy.deepcopy(self._inps)
+        self.v_ac_array = np.array([])
+        self.t_ac_array = np.array([])
+        self.v_ce_array = np.array([])
+        self.t_ce_array = np.array([])
+        self.epoch_nums = np.array([])
+
+
 
     def fit(self, training_data, validation_data=None):
 
@@ -43,11 +54,11 @@ class FCN(object):
             #first we shuffle training data
 
             random.shuffle(training_data)
-
+            #print(len(training_data))
             #split into mini batches of the specified size
             mini_batches = [training_data[k:k + self.batch_size] for k in
                             range(0, len(training_data), self.batch_size)]
-
+            #print(len(mini_batches))
             for mini_batch in mini_batches:
                 #create matrices to store our nablas
                 nabla_b = [np.zeros(bias.shape) for bias in self.biases]
@@ -60,23 +71,59 @@ class FCN(object):
                     nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
                     nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
 
-
+                #store prev
                 #calculate new weights based on old weights, learn rate, and nablas
-                self.weights = [w - (self.eta / self.batch_size) * dw for w, dw in zip(self.weights, nabla_w)]
+                self.weights = [w - (self.eta / self.batch_size) * dw + velocity*self.momentum for w, dw, velocity in zip(self.weights, nabla_w, self.prev_grads)]
+                self.prev_grads = [(self.eta / self.batch_size) * dw for dw in nabla_w]
                 #calculate biases
                 self.biases = [b - (self.eta / self.batch_size) * db for b, db in zip(self.biases, nabla_b)]
 
-            #print status messages and get validation data
-            if validation_data:
-                accuracy = self.validate(validation_data) / 100.0
-                print("Epoch {0}, accuracy {1} %.".format(epoch + 1, accuracy))
-            else:
-                print("Processed epoch {0}.".format(epoch))
+            tcross_entropy = [self.get_ce(x,y,'train') for x,y in training_data]
+            vcross_entropy = [self.get_ce(x,y,'no') for x,y in validation_data]
+            v_avg_ce = (-1.0*sum(vcross_entropy))/float(len(vcross_entropy))
+            t_avg_ce = (-1.0*sum(tcross_entropy))/float(len(tcross_entropy))
+            vaccuracy,taccuracy = self.validate(validation_data,training_data)
+            print("Epoch {0}:".format(epoch+1))
+            print("validation")
+            print(vaccuracy)
+            print(v_avg_ce)
+            print('training')
+            print(taccuracy)
+            print(t_avg_ce)
+
+            #Store cross_entropies and accuracies
+            self.v_ac_array = np.append(self.v_ac_array,vaccuracy)
+            self.t_ac_array = np.append(self.t_ac_array,taccuracy)
+            self.v_ce_array = np.append(self.v_ce_array,v_avg_ce)
+            self.t_ce_array = np.append(self.t_ce_array,t_avg_ce)
+            self.epoch_nums = np.append(self.epoch_nums,epoch+1)
                 
 
-    def validate(self,validation_data):
+    def validate(self,validation_data, training_data):
         validation_results = [(self.predict(x) == y) for x, y in validation_data]
-        return sum(result for result in validation_results)     
+        #pdb.set_trace()
+        percent_correct = float(sum(result for result in validation_results))/float(len(validation_results))
+        valaccuracy = percent_correct*100
+        training_results = [(self.predict(x) == np.argmax(y)) for x, y in training_data]
+        percent_correct = float(sum(result for result in training_results))/float(len(training_results))
+        trainaccuracy = percent_correct*100
+        return valaccuracy,trainaccuracy
+
+    def get_stats(self, validation_data, train_data):
+        val_ce = [(self.get_cross_entropy(x,y,'val')) for x,y in validation_data]
+        avg_val_ent = sum(val_ce)/float(len*val_ce)
+
+        train_ce = [(self.get_cross_entropy(x,y,'train')) for x,y in train_data]
+        avg_train_ent = sum(train_ce)/float(len*train_ce)
+        return avg_train_ent, avg_val_ent
+
+    def get_ce(self,x,y,mytype):
+        self.predict(x)
+        if mytype == 'train':
+            ce = math.log(sum(self._outs[-1]*y))
+        else:
+            ce = math.log(self._outs[-1][y])
+        return ce
 
     def predict(self, x):
         self._forward_prop(x)
@@ -86,6 +133,7 @@ class FCN(object):
         #set activations equal to the input array
         self._outs[0] = x
         #process each layer using our weights, biases and activation function
+        
         for i in range(1, self.num_layers):
             #calculate each neuron's pre-activation values
             self._inps[i] = (self.weights[i].dot(self._outs[i - 1]) + self.biases[i])

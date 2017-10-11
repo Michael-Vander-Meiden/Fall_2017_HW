@@ -77,12 +77,13 @@ for i in range(1000):
 	Y.append(i)
 	'''
 for i in range(1000):
-	mult = smart_response('mult',i,G)
-	add = smart_response('add',i,G)
+	mult = skip_response('mult',i,G)
+	add = skip_response('add',i,G)
 	X1.append(mult)
 	X2.append(add)
 	Y.append(i)
-
+print(X1[-1])
+print(X2[-1])
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(Y,X1)
