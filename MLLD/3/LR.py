@@ -1,7 +1,6 @@
 import sys
 import re
 import math
-from copy import copy
 #this returns a non-unique ID. s is the string and n is the 
 def col_index(s,n):
 	return hash(s)%n
@@ -31,7 +30,7 @@ def make_empty_list(n):
 		l[i] = [0]*5
 	return l
 
-def labels_to_index(labels,cur_label_count,label_dict,llist):
+def build_label_list(labels,cur_label_count,label_dictl,llist):
 	a = []
 	for label in labels:
 		if label not in label_dict:
@@ -39,19 +38,22 @@ def labels_to_index(labels,cur_label_count,label_dict,llist):
 			cur_label_count += 1
 			llist.append(label)
 		a.append(label_dict[label])
+	return cur_label_count, label_dict, llist
 
+def labels_to_index(labels,label_dict):
 	onehot = [0]*5
-	for label in a:
-		onehot[label] = 1
-	return onehot, cur_label_count, label_dict, llist
+	for label in labels:
+		index = int(label_dict[label])
+		onehot[index] = 1
+	return onehot
 
 def dot_product (keys,B,x):
-	sums = {}
+	a = [0]*5
 	for key in keys:
 		for yi, j in enumerate(B[key]):
-			value = x[key]*float(B[key][yi])
-			sums[yi]= sums.get(yi,0.0)+value
-	return sums
+			value = x[key]*j
+			a[yi]=a[yi]+value
+	return a
 
 def init_x(n):
 	l = [0]*n
@@ -76,9 +78,12 @@ for i,curdoc in enumerate(sys.stdin):
 	#create epochs
 	epoch = i/train_size
 	lam = init_l/((1+epoch)**2)
-	x = copy(x_base)
+	x = init_x(n)
 	labels,words = split_line(curdoc)
-	l_index, cur_label_count,label_dict,llist = labels_to_index(labels,cur_label_count,label_dict,llist)
+	if cur_label_count < 5:
+		cur_label_count,label_dict,llist = build_label_list(labels,cur_label_count,label_dict,llist)
+
+	l_index = labels_to_index(labels,label_dict)
 	k = k+1
 	keys = []
 	for word in words:
@@ -89,11 +94,13 @@ for i,curdoc in enumerate(sys.stdin):
 	dot = dot_product(keys,B,x)
 	for yi, label_i in enumerate(l_index):
 		p = sigmoid(dot[yi])
-		if (label_i-p)>0.01 or i%2 == 0:
+		if (label_i-p)>0.5 or i%2 == 0:
+			val1 = lam*(label_i-p)
+			val2 = 1.0-2.0*lam*mu
 			for key in keys:
-				if abs(B[key][yi]) > 0.8:
-					B[key][yi]=B[key][yi]*(1.0-2.0*lam*mu)**(k-A[key][yi])
-				B[key][yi] = B[key][yi] + lam*(label_i-p)*1.0
+				if abs(B[key][yi]) > .7:
+					B[key][yi]=B[key][yi]*(val2)**(k-A[key][yi])
+				B[key][yi] = B[key][yi] + val1
 				A[key][yi] = k
 
 #Test time!
@@ -119,7 +126,7 @@ with open(test_file) as f:
 			if key not in keys:
 				keys.append(key)
 		dot = dot_product(keys,B,x)
-		l_index, cur_label_count,label_dict,llist = labels_to_index(labels,cur_label_count,label_dict,llist)
+		l_index = labels_to_index(labels,label_dict)
 			
 		for yi, label in enumerate(llist):
 
