@@ -6,7 +6,7 @@ import pdb
 import matplotlib.pyplot as plt
 
 training_data = dataio.training_from_doc()
-
+pdb.set_trace()
 validation_data = dataio.validation_from_doc()
 learning_rates = [.1,.01,.2,.5]
 

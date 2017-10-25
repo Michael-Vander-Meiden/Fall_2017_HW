@@ -2,8 +2,6 @@ import sys
 import re
 import math
 import time
-from copy import copy
-from stop_words import get_stop_words
 #this returns a non-unique ID. s is the string and n is the 
 start_time = time.time()
 def col_index(s,n):

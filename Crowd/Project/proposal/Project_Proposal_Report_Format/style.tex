@@ -1,0 +1,94 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+% \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2017
+%
+% to avoid loading the natbib package, add option nonatbib:
+% \usepackage[nonatbib]{nips_2017}
+
+\usepackage[final]{style}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage[final]{nips_2017}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+
+\title{Methods for Limiting Positive Skew of Percentage-Based Ranking}
+
+% The \author macro works with any number of authors. There are two
+% commands used to separate the names and addresses of multiple
+% authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to
+% break the lines. Using \AND forces a line break at that point. So,
+% if LaTeX puts 3 of 4 authors names on the first line, and the last
+% on the second line, try using \AND instead of \And before the third
+% author name.
+
+\author{
+  Michael Vander Meiden \\
+  School of Computer Science\\
+  Carnegie Mellon University\\
+  \texttt{mavm@cmu.edu} \\
+	%% etc.. Delete author 2 if you are only one author.
+}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Background}
+Every year, academics across many fields submit research papers, the culmination of months of work, to their respective conferences. Academic conferences can be a wonderful place to exchange ideas and garner feedback on research questions. Acceptance the acceptance of these papers to the conference is often viewed as a crucial validation, both of the quality of the paper and of the career of the academic.
+
+Acceptance to these conferences is not easy. The following are the acceptance rates of recent conferences in machine learning and computer vision:
+
+\begin{itemize}
+\item ICCV 2015: 30.3\%
+\item CVPR 2015: 28.4\%
+\item ECCV 2014: 26.7\%
+	\item NIPS 2016: 23.6\%
+\end{itemize} 
+
+Unfortunately, acceptance to these conferences is subjective. In the rubric provided to reviewers, papers are rated on four categories. Technical quality, novelty, potential impact, and clarity/presentation.
+
+Reviewers for NIPS 2016 were told to rate the papers based on the following scale:
+\begin{itemize}
+\item 1 - Low or very low quality
+\item 2 - Sub-standard for NIPS
+\item 3 - Poster level. Only 30\% of submissions should reach this stage or higher
+\item Oral level only 3\% of submissions should score this high
+\item Award level, only 0.1\% of submissions should achieve this score
+\end{itemize} 
+
+\section{Problem}
+
+Because there is not ground-truth for the rating of the papers, it is hard to judge the overall review process. That said, there are some discrepancies from the proposed rubric and the final distribution of scores. Findings from [1] show that the distribution specified by the rubric is clearly mismatched from the reviewers actual distribution.
+
+Over 10x as many papers received award level 5 than the proposed amount. The rest of the categories were also seriously skewed toward higher rankings. As discussed by Shah, this caused a high level of papers to receive passing marks, and the task of sorting these papers fell to the area chairs. By concentrating the decisions to a smaller group, there was a higher rate of subjectivity. Also, rejected papers sometimes received scores similar to accepted papers. The goal of this project is to determine the causes of this positive skew in grading, and to find methods that may help limit this phenomena.
+
+\section{Approach}
+
+The current plan is to develop a series of experiments to be performed using Amazon Mechanical Turk.
+The First step is to determine whether the phenomena can be reproduced. Obviously, we can not expect people outside of the machine learning field to review highly NIPS papers, so we must determine a different material which our reviewers can assess the quality of.
+
+Next, we can use the determined medium to perform a series of experiments changing the parameters of the task. For example, do reviewers perform better with percentage values that fit more cleanly into the papers reviewed by the reviewer? The reviewers for NIPS were supposed to select a 5 grade 1/1000 times, but did not review 1000 papers. How might have this affected the quality of their review?
+
+
+\section*{References}
+
+
+\small
+
+[1] Nihar, S.B.\ \& Tabibian, B\ \& Muandet, K\ \& Guyon, I\ \& von Luxburg, U\ \ (2017) Design and Analysis of the NIPS 2016 Review Process 
+
+\end{document}

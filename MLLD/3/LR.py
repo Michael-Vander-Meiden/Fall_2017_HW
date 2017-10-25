@@ -18,7 +18,7 @@ def tokenizeDoc(cur_doc):
     return re.findall('\\w+', cur_doc)
 
 def split_line(line):
-    splits = re.split(r'\t+', line)
+    splits = line.split('\t')
     labels = tokenizeDoc(splits[1])
     words = tokenizeDoc(splits[2])
     return labels, words
@@ -49,6 +49,7 @@ def labels_to_index(labels,label_dict):
 
 def dot_product (keys,B,x):
 	a = [0]*5
+	#print len(keys)
 	for key in keys:
 		for yi, j in enumerate(B[key]):
 			value = x[key]*j
@@ -66,20 +67,26 @@ mu = float(sys.argv[3])
 max_iter = sys.argv[4]
 train_size = int(sys.argv[5])
 test_file = sys.argv[6]
-label_dict = {}
+label_dict = dict()
 cur_label_count = 0
 llist = []
+stopwords = ['a','the','of','be','to','and','in','that','have','it','for','not','on']
 
 k = 0.0
 A = make_empty_list(n)
 B = make_empty_list(n)
-x_base = init_x(n)
 for i,curdoc in enumerate(sys.stdin):
 	#create epochs
 	epoch = i/train_size
 	lam = init_l/((1+epoch)**2)
-	x = init_x(n)
+	x = dict()
 	labels,words = split_line(curdoc)
+
+	for word in stopwords:
+		try:
+			words.remove(word)
+		except ValueError:
+			pass
 	if cur_label_count < 5:
 		cur_label_count,label_dict,llist = build_label_list(labels,cur_label_count,label_dict,llist)
 
@@ -88,7 +95,7 @@ for i,curdoc in enumerate(sys.stdin):
 	keys = []
 	for word in words:
 		key = col_index(word,n)
-		x[key]+=1
+		x[key]= x.get(key,0.0)+1.0
 		if key not in keys:
 			keys.append(key)
 	dot = dot_product(keys,B,x)
@@ -104,12 +111,14 @@ for i,curdoc in enumerate(sys.stdin):
 				A[key][yi] = k
 
 #Test time!
-stopwords = ['a','the','of','be','to','and','in','that','have','it','for','not','on']
+
 with open(test_file) as f:
+	correct = 0.0
+	total = 0.0
 	for i,curdoc in enumerate(f):
 		ps = []
 		final_string = ''
-		x = init_x(n)
+		x = [0]*n
 		#populate x
 		labels,words = split_line(curdoc)
 		keys = []
@@ -134,6 +143,9 @@ with open(test_file) as f:
 			ps.append(p)
 			final_string = final_string+label+'\t'+str(p)+','
 		print(final_string[:-1])
+		if llist[ps.index(max(ps))] in labels:
+			correct +=1
+		total+=1
 
 		
 
