@@ -4,7 +4,7 @@ import random
 
 
 class RBM(object):
-	def __init__(self, n_visible, n_hidden, alpha=0.01, W=None):
+	def __init__(self, n_visible, n_hidden, alpha=0.005, W=None):
 		self.n_visible = n_visible
 		self.n_hidden = n_hidden
 		self.alpha = alpha
@@ -55,7 +55,15 @@ class RBM(object):
 			self.avg_val_loss.append(val_loss/float(X_val.shape[0]))
 			self.epoch_nums.append(epoch)
 
+	def question_c(self):
+		self.hallucinations = np.random.uniform(low=0., high=1., size=(self.n_hidden,self.n_visible))
 
+		test = np.random.binomial([np.ones((self.n_hidden,self.n_visible))],0.1)
+		for i in range(self.hallucinations.shape[0]):
+			x = self.hallucinations[i,:]
+			x_k = self._gibbs_chain(x,1,False)
+			self.hallucinations[i,:] = x_k
+			print i
 
 	def _gibbs_chain(self,v,k,sample):
 		cur_v = v

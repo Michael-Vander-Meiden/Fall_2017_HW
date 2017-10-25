@@ -11,11 +11,12 @@ def main():
     val_data = txt_to_array('digitsvalid.txt')
     n_visible = train_data.shape[1]
     rbm = RBM(n_visible,100)
-    rbm.train(train_data,val_data,1,100)
+    rbm.train(train_data,val_data,5,250)
 
     plt.plot(rbm.epoch_nums,rbm.avg_train_loss, 'r--', rbm.avg_val_loss, 'b--')
     plt.savefig('q5a.png')
     plt.show()
+    np.save('best_weights',rbm.W)
 
 if __name__ == "__main__":
     import argparse

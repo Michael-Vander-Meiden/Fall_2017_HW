@@ -9,7 +9,7 @@ import math
 #using a similar architecture to SKLearn's models
 
 class FCN(object):
-    def __init__(self, architecture=[784,100,10], eta = 0.1, batch_size = 1, dropout = 0, n_epochs=130, rand_seed = 45, momentum = .9):
+    def __init__(self, architecture=[784,100,10], eta = 0.1, batch_size = 1, dropout = 0, n_epochs=75, rand_seed = 45, momentum = .9,pretrain=None):
         
 
         self.batch_size = batch_size
@@ -45,8 +45,8 @@ class FCN(object):
         self.v_ce_array = np.array([])
         self.t_ce_array = np.array([])
         self.epoch_nums = np.array([])
-
-
+        if type(pretrain) == list:
+            self.weights[1]=pretrain
 
     def fit(self, training_data, validation_data=None):
 
