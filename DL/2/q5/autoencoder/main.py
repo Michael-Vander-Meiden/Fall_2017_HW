@@ -20,8 +20,6 @@ np.save('weightsq5f',a.weights)
 
 vce=a.v_ce_array
 tce=a.t_ce_array
-#va= np.mean([a.v_ac_array, b.v_ac_array, c.v_ac_array, d.v_ac_array, e.v_ac_array], axis=0)
-#ta= np.mean([a.t_ac_array, b.t_ac_array, c.t_ac_array, d.t_ac_array, e.t_ac_array], axis=0)
 
 plt.plot(a.epoch_nums,vce, 'r--')
 plt.plot(a.epoch_nums,tce, 'b--')

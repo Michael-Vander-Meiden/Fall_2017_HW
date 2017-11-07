@@ -165,7 +165,6 @@ class FCN(object):
         delt_nabla_b = [np.zeros(bias.shape) for bias in self.biases]
         delt_nabla_w = [np.zeros(weight.shape) for weight in self.weights]
 
-        #TODO change this to softmax
         error = (self._outs[-1] - y) * helper.dSigmoid(self._inps[-1])
         delt_nabla_b[-1] = error
         delt_nabla_w[-1] = error.dot(self._outs[-2].transpose())

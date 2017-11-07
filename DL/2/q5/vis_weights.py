@@ -5,7 +5,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.gridspec as gridspec
 import pdb
 
-weights = numpy.load('weightsq5e.npy')[1]
+weights = numpy.load('weightsq5f.npy')[1]
 
 images = []
 rows = 10
@@ -20,6 +20,6 @@ for i in range(weights.shape[0]):
 	ax[i].imshow(im)
 	ax[i].axis('off')
 
-plt.savefig('q5e.png')
+plt.savefig('q5f.png')
 plt.show()
 
