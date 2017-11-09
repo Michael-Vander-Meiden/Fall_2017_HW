@@ -26,6 +26,14 @@ class f(XManFunctions):
     @staticmethod
     def mean(a):
         return XManFunctions.registerDefinedByOperator('mean', a)
+    
+def _softMax(x):
+    #x = x - np.max(x, axis=1, keepdims=True)
+    #x = np.exp(x)
+    #x = x / np.sum(x, axis=1, keepdims=True)
+    x = np.exp(x) / np.sum(np.exp(x), axis=1, keepdims=True)
+    return x
+
     # I added other operation registers above
 
 # the functions that autograd.eval will use to evaluate each function,
@@ -38,7 +46,7 @@ EVAL_FUNS = {
     'mul':      np.dot,
     'relu':     lambda x: (x>0)*x,
     'softMax':  lambda x: np.exp(x)/np.sum(np.exp(x),axis=1,keepdims=True),
-    'crossEnt': lambda x, y: -1.0*np.sum((y * np.log(x)),axis=1,keepdims=True),
+    'crossEnt': lambda x, y: -1.0*np.sum((y * np.log(x)))/y.shape[0],
     'mean':     np.mean
     }
 
@@ -66,12 +74,12 @@ def _derivAdd(delta,x1):
 BP_FUNS = {
     'add':              [lambda delta,out,x1,x2: _derivAdd(delta,x1),    lambda delta,out,x1,x2: _derivAdd(delta,x2)],
     'subtract':         [lambda delta,out,x1,x2: _derivAdd(delta,x1),    lambda delta,out,x1,x2: -_derivAdd(delta,x2)],
-    'square':           [lambda delta,out,a : 2. *delta * a],
+    'square':           [lambda delta,out,x : delta * 2.0 * x],
     'mul':              [lambda delta,out,x1,x2: np.dot(delta, x2.T), lambda delta,out,x1,x2:np.dot(x1.T, delta)],
     'relu':             [lambda delta,out,x: delta * (x>0)],
-    'crossEnt-softMax': [lambda delta,out,o,y: delta * ((np.exp(o)/np.sum(np.exp(o),axis=1,keepdims=True))-y),
-                         lambda delta,out,o,y: -1.*delta * np.log((np.exp(o)/np.sum(np.exp(o),axis=1,keepdims=True))) / y.shape[0]],# TODO
-    'mean':             [lambda delta,out,x : (delta + 0.0*x)/x.shape[0] ]# TODO
+    'crossEnt-softMax': [lambda delta,out,o,y: delta * (_softMax(o)-y) / y.shape[0],
+                         lambda delta,out,o,y: -delta * np.log(_softMax(o)) / y.shape[0]],# TODO
+    'mean':             [lambda delta,out,x : (delta + 0.0*x)/x.shape[0] ],# TODO
     }
 
 # Unit tests for the functions. Run by `python functions.py`.
@@ -106,6 +114,7 @@ if __name__ == '__main__':
         [ 0.52526954],
         [ 1.10765864]])
     # Eval crossEnt
+    pdb.set_trace()
     np.testing.assert_allclose(EVAL_FUNS['crossEnt'](expected_softMax_x, z), expected_crossEnt_softMax_x_z)
     # Eval mean
     expected_mean_v = 0.52138120499999996
@@ -139,7 +148,7 @@ if __name__ == '__main__':
         [  3.54198998e-01,  -3.54198998e-01],
         [ -1.87226917e-04,   1.87226917e-04]]))
     # BP mean
-    
+    pdb.set_trace()
     np.testing.assert_allclose(BP_FUNS['mean'][0](0.19950823, expected_mean_v, v), np.array([
         [ 0.09975412],
         [ 0.09975412]]))
