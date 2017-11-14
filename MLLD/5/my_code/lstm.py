@@ -27,7 +27,7 @@ class LSTM(object):
         #TODO: define your model here
 
         #example batch size for initialization
-        batch_size = 5
+        batch_n = 5
     #We need to initialize all of the weights and biases, which we can do according to Glorot initialization
 
         #First step, find the scale of each initialization:    
@@ -38,27 +38,86 @@ class LSTM(object):
 
         #here we can code our default input and output
         #set each charachter x1,x2,x3,x4..
-        y = np.zeros((batch_size, self.out_size))
-        for i in range(batch_size):
+        y = np.zeros((batch_n, self.out_size))
+        for i in range(batch_n):
             y[i, np.random.choice(self.out_size)] = 1
         x.y = f.input(name = "y", default = y)
         x.x = [f.input(name = 'x' + str(i+1), default = np.random.rand(1,self.in_size)) for i in range(self.max_len)]
-
+        print ['x' + str(i+1) for i in range(self.max_len)]
         #defining variables using setattr
-        setattr(x,'Wi' f.param(name='Wi', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
-        setattr(x,'Wf' f.param(name='Wf', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
-        setattr(x,'Wo' f.param(name='Wo', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
-        setattr(x,'Wc' f.param(name='Wc', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
-        setattr(x,'Ui' f.param(name='Ui', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
-        setattr(x,'Uf' f.param(name='Uf', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
-        setattr(x,'Uo' f.param(name='Uo', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
-        setattr(x,'Uc' f.param(name='Uc', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
-        setattr(x,'bi' f.param(name='bi', default = np.random.uniform(-a_b,a_b,self.num_hid)))
-        setattr(x,'bf' f.param(name='bf', default = np.random.uniform(-a_b,a_b,self.num_hid)))
-        setattr(x,'bo' f.param(name='bo', default = np.random.uniform(-a_b,a_b,self.num_hid)))
-        setattr(x,'bc' f.param(name='bc', default = np.random.uniform(-a_b,a_b,self.num_hid)))
-        setattr(x,'W2' f.param(name='W2', default = np.random.uniform(-a_w2,a_w2,size=(self.num_hid,self.out_size))))
-        setattr(x,'b2' f.param(name='b2', default = np.random.uniform(-a_b,a_b,(1,self.out_size))))
+        def_W = np.random.uniform(low=-a_w1,high=a_w1,size=(self.in_size, self.num_hid))
+        setattr(x,'Wi', f.param(name='Wi', default = def_W))
+        setattr(x,'Wf', f.param(name='Wf', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
+        setattr(x,'Wo', f.param(name='Wo', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
+        setattr(x,'Wc', f.param(name='Wc', default = np.random.uniform(-a_w1,a_w1,size=(self.in_size,self.num_hid))))
+        setattr(x,'Ui', f.param(name='Ui', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
+        setattr(x,'Uf', f.param(name='Uf', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
+        setattr(x,'Uo', f.param(name='Uo', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
+        setattr(x,'Uc', f.param(name='Uc', default = np.random.uniform(-a_u,a_u,size=(self.num_hid,self.num_hid))))
+        setattr(x,'bi', f.param(name='bi', default = np.random.uniform(-a_b,a_b,self.num_hid)))
+        setattr(x,'bf', f.param(name='bf', default = np.random.uniform(-a_b,a_b,self.num_hid)))
+        setattr(x,'bo', f.param(name='bo', default = np.random.uniform(-a_b,a_b,self.num_hid)))
+        setattr(x,'bc', f.param(name='bc', default = np.random.uniform(-a_b,a_b,self.num_hid)))
+        setattr(x,'W2', f.param(name='W2', default = np.random.uniform(-a_w2,a_w2,size=(self.num_hid,self.out_size))))
+        setattr(x,'b2', f.param(name='b2', default = np.random.uniform(-a_b,a_b,self.out_size)))
+
+
+        x.i = list()
+        x.cur_c = list()
+        x.o = list()
+        x.f = list()
+        x.h_init = f.input(name='h_init', default=np.zeros((batch_n, self.num_hid)))
+        x.c_init = f.input(name='c_init', default=np.zeros((batch_n, self.num_hid)))
+
+        for t in xrange(1, self.max_len+1):
+            if t == 1:
+                setattr(x, 'i'+str(t), f.sigmoid(f.mul(x.x[t], x.Wi) + f.mul(x.h_init, x.Ui) + x.bi))
+                setattr(x, 'f' + str(t), f.sigmoid(
+                    f.mul(x.x[t-1], x.Wf) +
+                    f.mul(x.h_init, x.Uf) +
+                    x.bf))
+                setattr(x, 'o' + str(t), f.sigmoid(
+                    f.mul(x.x[t-1], x.Wo) +
+                    f.mul(x.h_init, x.Uo) +
+                    x.bo))
+                setattr(x, 'c_tilt' + str(t), f.tanh(
+                    f.mul(x.x[t-1], x.Wc) +
+                    f.mul(x.h_init, x.Uc) +
+                    x.bc))
+
+                setattr(x, 'c'+str(t), f.hadamard(getattr(x, 'f'+str(t)), x.c_init)
+                        + f.hadamard(getattr(x, 'i'+str(t)), getattr(x, 'c_tilt'+str(t))) )
+                setattr(x, 'h'+str(t), f.hadamard(getattr(x, 'o'+str(t)), f.tanh(getattr(x, 'c'+str(t)))))
+
+
+            else:    
+                setattr(x, 'i'+str(t), f.sigmoid(
+                    f.mul(x.x[t-1], x.Wi) +
+                    f.mul(getattr(x,'h'+str(t-1)), x.Ui) + x.bi))
+                setattr(x, 'f' + str(t), f.sigmoid(
+                    f.mul(x.x[t-1], x.Wf) +
+                    f.mul(getattr(x, 'h' + str(t - 1)), x.Uf) +
+                    x.bf))
+                setattr(x, 'o' + str(t), f.sigmoid(
+                    f.mul( x.x[t-1], x.Wo) +
+                    f.mul(getattr(x, 'h' + str(t - 1)), x.Uo) +
+                    x.bo))
+                setattr(x, 'c_tilt' + str(t), f.tanh(
+                    f.mul(x.x[t-1], x.Wc) +
+                    f.mul(getattr(x, 'h' + str(t - 1)), x.Uc) +
+                    x.bc))
+
+                setattr(x, 'c'+str(t), f.hadamard(getattr(x, 'f'+str(t)), getattr(x,'c'+str(t-1)))
+                        + f.hadamard(getattr(x, 'i'+str(t)), getattr(x, 'c_tilt'+str(t))) )
+                setattr(x, 'h'+str(t), f.hadamard(getattr(x, 'o'+str(t)), f.tanh(getattr(x, 'c'+str(t)))))
+
+
+  
+
+        x.o2 = f.relu(f.mul(getattr(x,'h'+str(self.max_len)), x.W2) + x.b2)
+        x.output = f.softMax(x.o2)
+        x.loss = f.crossEnt(x.output, x.y)
+
 
         return x.setup()
 
@@ -97,18 +156,29 @@ def main(params):
     value_dict = lstm.my_xman.inputDict()
     lr = init_lr
     train_loss = np.ndarray([0])
-    
+    w_list = lstm.my_xman.operationSequence(lstm.my_xman.loss)
+    ad = Autograd(lstm.my_xman)
     for i in range(epochs):
         for (idxs,e,l) in mb_train:
             #TODO prepare the input and do a fwd-bckwd pass over it and update the weights
+            for i in range(1,max_len+1):
+                value_dict['x'+str(i)] = np.array(e)[:,max_len-i,:]
+            value_dict["y"] = np.array(l)
+            value_dict['h_init'] = np.ones((e.shape[0],num_hid))
+            value_dict['c_init'] = np.ones((e.shape[0],num_hid))
+            value_dict = ad.eval(w_list,value_dict)
             
+            updates = ad.bprop(w_list, value_dict, loss=1.0)
+            for item in updates:
+                if lstm.my_xman.isParam(item):
+                    value_dict[item] -= lr * updates[item]
             #save the train loss
-            train_loss = np.append(train_loss, #TODO)
-                                   
+            #train_loss = np.append(train_loss, #TODO)
+            pass                      
         # validate
         for (idxs,e,l) in mb_valid:
             #TODO prepare the input and do a fwd pass over it to compute the loss
-
+            pass
         #TODO compare current validation loss to minimum validation loss
         # and store params if needed
     print "done"
@@ -117,7 +187,7 @@ def main(params):
     
     for (idxs,e,l) in mb_test:
         # prepare input and do a fwd pass over it to compute the output probs
-        
+        pass
     #TODO save probabilities on test set
     # ensure that these are in the same order as the test input
     #np.save(output_file, ouput_probabilities)

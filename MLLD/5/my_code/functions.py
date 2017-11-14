@@ -27,6 +27,17 @@ class f(XManFunctions):
     def mean(a):
         return XManFunctions.registerDefinedByOperator('mean', a)
 
+    @staticmethod
+    def sigmoid(a):
+        return XManFunctions.registerDefinedByOperator('sigmoid',a)
+
+    @staticmethod
+    def tanh(a):
+        return XManFunctions.registerDefinedByOperator('tanh',a)   
+
+    @staticmethod
+    def hadamard(x1,x2):
+        return XManFunctions.registerDefinedByOperator('hadamard',x1,x2)   
 
     # TODO add other operation registers
 
@@ -61,6 +72,7 @@ EVAL_FUNS = {
 # crossEnt-softMax below.
 
 def _derivAdd(delta,x1):
+    #pdb.set_trace()
     if delta.shape!=x1.shape:
         # broadcast, sum along axis=0
         if delta.shape[1]!=x1.shape[0]:

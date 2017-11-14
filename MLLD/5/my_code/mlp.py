@@ -52,22 +52,6 @@ class MLP(object):
             x.loss = f.mean(f.crossEnt(x.outputs,x.y))
         return x.setup()
 
-def check_gradient(key, value_dict, ad, wengert_list, gradients, epsilon=1e-8):
-    for index, value in np.ndenumerate(value_dict[key]):
-        value_dict[key][index] += epsilon
-        big = ad.eval(wengert_list, value_dict)['loss']
-        value_dict[key][index] -= (2 * epsilon)
-        small = ad.eval(wengert_list, value_dict)['loss']
-        value_dict[key][index] += epsilon
-        assert abs(value - value_dict[key][index]) < 0.0000001
-        diff = abs((big-small) / (2*epsilon) - gradients[key][index])
-        print 'manual grad:', (big-small) / (2*epsilon)
-        print 'auto grad:', gradients[key][index]
-        print diff
-        #if diff > 0.001:
-        #    return False
-    exit()
-    return True
 
 
 
