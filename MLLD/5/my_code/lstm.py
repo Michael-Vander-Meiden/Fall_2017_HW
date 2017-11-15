@@ -7,7 +7,8 @@ import numpy as np
 from xman import *
 from utils import *
 from autograd import *
-
+import time
+import copy
 np.random.seed(0)
 
 class LSTM(object):
@@ -115,8 +116,8 @@ class LSTM(object):
   
 
         x.o2 = f.relu(f.mul(getattr(x,'h'+str(self.max_len)), x.W2) + x.b2)
-        x.output = f.softMax(x.o2)
-        x.loss = f.crossEnt(x.output, x.y)
+        x.outputs = f.softMax(x.o2)
+        x.loss = f.mean(f.crossEnt(x.outputs, x.y))
 
 
         return x.setup()
@@ -158,7 +159,15 @@ def main(params):
     train_loss = np.ndarray([0])
     w_list = lstm.my_xman.operationSequence(lstm.my_xman.loss)
     ad = Autograd(lstm.my_xman)
+    best_vloss = 1000.
+    epoch_times = np.ndarray([0])
+
+
     for i in range(epochs):
+        start = time.time()
+        print "Epoch {}".format(i)
+        total_train_loss = 0.
+        train_counter = 0.
         for (idxs,e,l) in mb_train:
             #TODO prepare the input and do a fwd-bckwd pass over it and update the weights
             for i in range(1,max_len+1):
@@ -174,20 +183,59 @@ def main(params):
                     value_dict[item] -= lr * updates[item]
             #save the train loss
             #train_loss = np.append(train_loss, #TODO)
-            pass                      
+            train_counter += 1
+            total_train_loss+=value_dict['loss']
+            train_loss = np.append(train_loss, value_dict['loss'])
+        average_batch_loss = total_train_loss/train_counter
+        print "training loss is: {}".format(average_batch_loss)                  
         # validate
+        total_val_loss = 0.
+        val_counter = 0.
         for (idxs,e,l) in mb_valid:
             #TODO prepare the input and do a fwd pass over it to compute the loss
-            pass
+            for i in range(1,max_len+1):
+                value_dict['x'+str(i)] = np.array(e)[:,max_len-i,:]
+            value_dict["y"] = np.array(l)
+            value_dict['h_init'] = np.ones((e.shape[0],num_hid))
+            value_dict['c_init'] = np.ones((e.shape[0],num_hid))
+            value_dict = ad.eval(w_list,value_dict)
+            val_counter+=1.
+            total_val_loss+=value_dict['loss']
+        average_batch_loss = total_val_loss/val_counter
+        print "validation loss is:{}".format(average_batch_loss)
+        #TODO compare current validation loss to minimum validation loss
+        if average_batch_loss < best_vloss:
+            print"Storing new best dict"
+            best_vloss=average_batch_loss
+            best_dict = copy.deepcopy(value_dict)
+        # and store params if needed
+        epoch_times = np.append(epoch_times,(time.time()-start))
         #TODO compare current validation loss to minimum validation loss
         # and store params if needed
     print "done"
     #write out the train loss
     np.save(train_loss_file, train_loss)    
-    
+
+
+    test_counter = 0.
+    total_test_loss = 0
     for (idxs,e,l) in mb_test:
         # prepare input and do a fwd pass over it to compute the output probs
-        pass
+        test_counter+=1
+        for i in range(1,max_len+1):
+            value_dict['x'+str(i)] = np.array(e)[:,max_len-i,:]
+        value_dict["y"] = np.array(l)
+        value_dict['h_init'] = np.ones((e.shape[0],num_hid))
+        value_dict['c_init'] = np.ones((e.shape[0],num_hid))
+        value_dict = ad.eval(w_list,value_dict)
+        total_test_loss += best_dict['loss']
+    print total_test_loss/test_counter
+    #TODO save probabilities on test set
+    # ensure that these are in the same order as the test input
+    np.save(output_file, best_dict['outputs'])
+    np.save('epoch_times_20', epoch_times)
+
+
     #TODO save probabilities on test set
     # ensure that these are in the same order as the test input
     #np.save(output_file, ouput_probabilities)
