@@ -1,0 +1,4 @@
+  File "/home/michael/Desktop/Fall_2017_HW/MLLD/hw6-handout/src/lp.py", line 46
+    def eval(self):
+    ^
+IndentationError: expected an indented block
