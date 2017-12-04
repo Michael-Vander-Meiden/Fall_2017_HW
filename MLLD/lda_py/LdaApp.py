@@ -74,8 +74,14 @@ class LdaApp(PsApplication):
   
 	# TO DO: 
 	# Sample function
-	def sample(self,k):
-		return random.random_int(0,k-1)
+	def sample(self,probs):
+		sum_p_up_to_k = 0.0
+		r = random.random()
+		norm = sum(probs)
+		for k in xrange(self.numTopics):
+			sum_p_up_to_k += probs[k]/norm
+			if r < sum_p_up_to_k:
+				return k
 	# ... fill me out ...
 	#
 
@@ -101,8 +107,6 @@ class LdaApp(PsApplication):
 		topicTable = PsTableGroup.getIntTable(TOPIC_TABLE)
 		wordTopicTable = PsTableGroup.getIntTable(WORD_TOPIC_TABLE)
 
-		print self.numWords
-		print self.numTopics
 		# Initialize LDA variables
 
 		print("Client %d thread %d initializeing variables..." % (clientId, threadId))
@@ -112,7 +116,7 @@ class LdaApp(PsApplication):
 		# Initialize Sampling
 		self.z = [[-1 for j in xrange(len(w[d]))] for d in xrange(len(w))]
 		
-		for d in range(len(w)):
+		for d in xrange(len(w)):
 			for i in range(len(w[d])):
 				word = w[d][i]
 				k = random.randint(0,self.numTopics-1)
@@ -140,6 +144,21 @@ class LdaApp(PsApplication):
 				# TO DO:
 				# Loop through each document in the current batch
 				#
+				for d in xrange(len(w)):
+					for i in xrange(len(w[d])):
+						word = w[d][i]
+						topic = self.z[d][i]
+						docTopicTable[d][topic]-=1
+						wordTopicTable.inc(word,topic,-1)
+						topicTable.inc(0,topic,-1)
+						probs = [(docTopicTable[d][k]+self.alpha)*(wordTopicTable.get(word,k)+self.beta)/(topicTable.get(0,k)+self.beta*self.numWords) for k in xrange(self.numTopics)]
+						topic = self.sample(probs)
+						docTopicTable[d][topic]+=1
+						wordTopicTable.inc(word,topic,1)
+						topicTable.inc(0,topic,1)
+						self.z[d][i] = topic
+				PsTableGroup.clock()
+
 				# ... fill me out ...
 				#
 
